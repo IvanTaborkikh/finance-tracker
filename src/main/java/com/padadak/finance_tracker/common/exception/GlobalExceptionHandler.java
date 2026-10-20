@@ -1,6 +1,7 @@
 package com.padadak.finance_tracker.common.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.http.*;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +30,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UnauthorizedException.class)
     ProblemDetail handleUnauthorized(UnauthorizedException ex) {
         return problem(HttpStatus.UNAUTHORIZED, "Unauthorized", ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidRequestException.class)
+    ProblemDetail handleInvalidRequest(InvalidRequestException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid request", ex.getMessage());
+    }
+
+    // ?sort=hacker: Spring Data не знає такого поля. Без обробника це було б 500.
+    @ExceptionHandler(PropertyReferenceException.class)
+    ProblemDetail handleInvalidSort(PropertyReferenceException ex) {
+        return problem(HttpStatus.BAD_REQUEST, "Invalid sort property",
+                "Unknown sort property: " + ex.getPropertyName());
     }
 
     // Страховка: якщо два запити одночасно пройшли перевірку exists і обидва вставляють,
