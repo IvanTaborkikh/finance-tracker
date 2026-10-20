@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]      # після кожного merge в main
+  pull_request:           # на кожен PR (і кожен новий push у гілку з відкритим PR)
+
+permissions:
+  contents: read          # workflow може тільки читати код, нічого не змінювати
+
+# Новий push у ту саму гілку скасовує ще незавершений запуск
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven            # кеш ~/.m2: залежності не качаються щоразу
+
+      - name: Build and test
+        run: ./mvnw -B verify     # compile → test (усі 42) → package (.jar)
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false             # тільки перевіряємо, що образ збирається
+          tags: finance-tracker:${{ github.sha }}
+          cache-from: type=gha    # кеш шарів Docker між запусками
+          cache-to: type=gha,mode=max
