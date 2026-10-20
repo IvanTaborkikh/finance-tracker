@@ -1,6 +1,20 @@
 name: finance-tracker
 
 services:
+  app:
+    build: .
+    container_name: finance-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8080:8080"
   postgres:
     image: postgres:18
     container_name: finance-postgres
