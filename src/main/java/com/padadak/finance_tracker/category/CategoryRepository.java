@@ -25,4 +25,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     // WHERE user_id = ? AND name = ? AND type = ?  → true/false
     boolean existsByUserIdAndNameAndType(Long userId, String name, CategoryType type);
+
+    // Категорія, яку юзер може ВИКОРИСТОВУВАТИ: власна або дефолтна (для транзакцій і бюджетів).
+    // На відміну від findByIdAndUserId, який шукає тільки ті, що юзер може ЗМІНЮВАТИ.
+    @Query("""
+            select c from Category c
+            where c.id = :id and (c.user is null or c.user.id = :userId)
+            """)
+    Optional<Category> findVisibleById(@Param("id") Long id, @Param("userId") Long userId);
 }

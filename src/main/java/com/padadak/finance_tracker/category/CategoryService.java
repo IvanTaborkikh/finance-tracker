@@ -60,6 +60,9 @@ public class CategoryService {
     @Transactional
     public void delete(Long userId, Long categoryId) {
         categoryRepository.delete(findOwned(userId, categoryId));
+        // flush: виконати DELETE зараз, а не під час commit. Якщо категорію використовують транзакції,
+        // FK у БД кине помилку тут, всередині сервісу, і GlobalExceptionHandler поверне 409.
+        categoryRepository.flush();
     }
 
     // Шукає категорію ТІЛЬКИ серед категорій цього юзера.
