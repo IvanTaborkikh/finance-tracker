@@ -37,7 +37,7 @@ class CategoryApiIntegrationTest extends AbstractIntegrationTest {
 
         mockMvc.perform(get("/api/v1/categories").header(USER_HEADER, alice))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(8))
+                .andExpect(jsonPath("$.length()").value(7))
                 .andExpect(jsonPath("$[0].isDefault").value(true));
     }
 
